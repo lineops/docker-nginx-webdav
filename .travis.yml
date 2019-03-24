@@ -1,0 +1,17 @@
+
+jobs:
+  include:
+    - stage: build-image
+      script:
+        - echo $TRAVIS_BUILD_NUMBER > version.txt
+        - docker build --build-arg VCS_REF=`git rev-parse --short HEAD` -t $DOCKER_USER/nginx-webdav .
+
+      after_success:
+        - docker login -u $DOCKER_USER -p $DOCKER_PASS
+        - docker tag $DOCKER_USER/nginx-webdav $DOCKER_USER/nginx-webdav:$TRAVIS_BUILD_NUMBER
+        - docker push $DOCKER_USER/nginx-webdav:$TRAVIS_BUILD_NUMBER
+        - docker push $DOCKER_USER/nginx-webdav:latest
+        - curl -XPOST https://hooks.microbadger.com/images/gbnk0/nginx-webdav/_WZPSkqhhy137pspxCtRGxofefI=
+branches:
+  only:
+    - master
